@@ -30,21 +30,27 @@ library(reshape2)#Plot
 
 Load data
 ```{r}
-
-#Load parasite count
-parasites <- read.csv("C:/Users/mp660/OneDrive - University of Exeter/PhD/Thesis_parasites/Data for Markdown/parasites_final_analyses.txt")
-
-#Load Bison network metrics
-networks = readRDS("C:/Users/mp660/OneDrive - University of Exeter/PhD/Thesis_parasites/Data for Markdown/for_bison/Bison_parasites2.RData")
-
-#Load demographic file
-census <- read.csv("C:/Users/mp660/OneDrive - University of Exeter/PhD/Thesis_injury/Data for Markdown/Census_Sep2020.csv")
+#Define user
+user = "mp660"#exeter
+#user = "mapf1"#st andrews
 
 #Directory for models
-directory = "C:/Users/mp660/OneDrive - University of Exeter/PhD/Thesis_parasites/Data for Markdown/brms models/final/"
+directory = paste0("C:/Users/",user,"/OneDrive - University of St Andrews/PhD/Thesis PhD/Thesis_parasites/Data for Markdown/brms models/")
 
 #Directory for edgelists
-dir_edges = "C:/Users/mp660/OneDrive - University of Exeter/PhD/Thesis_parasites/Data for Markdown/"
+dir_edges = paste0("C:/Users/",user,"/OneDrive - University of St Andrews/PhD/Thesis PhD/Thesis_parasites/Data for Markdown/")
+
+#Load parasite count
+parasites <- read.csv(paste0(dir_edges,"parasites_final_analyses.txt"))
+
+#Load Bison network metrics
+networks = readRDS(paste0(dir_edges,"for_bison/Bison_parasites2.RData"))#only individuals with parasite data
+all_members = readRDS(paste0(dir_edges,"for_bison/Bison_all.RData"))#all individuals in groups
+
+
+#Load demographic file
+census <- read.csv(paste0(dir_edges,"Census_Sep2020.csv"))
+
 
 ```
 
@@ -95,16 +101,14 @@ hist(parasites$proto_count_NZ)#potozoas
 ```
 
 Measures of parasite risk:
-- Prevalence: number of hosts infected with one or more parasite divided by the number of hosts examined (one dependent variable % or ratio) [Bush et al., 1997]
-*Only report for population pre and post hurricane.
 - Presence/absence: presence or absence of infection per parasite species (3 binomial dependent variables)
 - Intensity: number of parasites per type per infected host (2 count dependent variables: #nematodes or #protozoa excluding zeroes)
-- Richness: number of concurrent infections.
+
 
 Measures of Sociality:
 - Social status: agonistic observations from the three groups (males + females).
-- Number of partners (degree): grooming and proximity separately.
-*Measures of risk: number of weak connections (degree < threshold) for grooming and proximity separately
+- Number of weak partners (degree < threshold): grooming and proximity separately.
+- Strength to strong partners (strengt >= threshold): grooming and proximity separately
 
 Covariates:
 - Age.
@@ -167,12 +171,12 @@ confint(emm, level = .89)
 #Before vs post at mean age = median 0.34, 89%HPD = 0.12 - 0.568
 
 #Age*rank
-emm = emtrends(prev_coli,  pairwise ~ outrank_perc, var = "age", at = list(outrank_perc = c(10,100)))
+emm = emtrends(prev_coli,  pairwise ~ outrank_perc, var = "age", at = list(outrank_perc = c(20,80)))
 confint(emm, level = .89)
 
 #At average age = 10.6 years
-#low-status (10%) median = 0.236, 89% CI = 0.0295, 0.435
-#High-status (100%) median = -0.288, 89% CI = -0.5281, -0.056
+#low-status (20%) median = 0.173, 89% CI = 0.0295, 0.341
+#High-status (80%) median = -0.215, 89% CI = -0.416, -0.019
 #low vs High median = 0.525, 89% CI = 0.151, 0.91
 
 
@@ -261,7 +265,6 @@ Question 2a: Weak proximity/grooming partners and infection risk
 
 ```{r}
 
-
 #Prevalence of B. coli
 #Proximity
 prev_coliSNA_weakP = brm_multiple(data = networks,
@@ -274,8 +277,8 @@ prev_coliSNA_weakP = brm_multiple(data = networks,
 #Save model
 #saveRDS(prev_coliSNA_weakP, file = paste0(directory,"final/prev_coliSNA_weakP.rds"))
 
-prev_coliSNA_weakP <- readRDS(paste0(directory,"prev_coliSNA_weakP.rds"))#load model
-pp_check(prev_coliSNA_weakP)#looks okay
+prev_coliSNA_weakP <- readRDS(paste0(directory,"final/prev_coliSNA_weakP.rds"))#load model
+#pp_check(prev_coliSNA_weakP)#looks okay
 
 
 #Grooming
@@ -288,9 +291,8 @@ prev_coliSNA_weakG = brm_multiple(data = networks,
 
 #Save model
 #saveRDS(prev_coliSNA_weakG, file = paste0(directory,"final/prev_coliSNA_weakG.rds"))
-
-prev_coliSNA_weakG <- readRDS(paste0(directory,"prev_coliSNA_weakG.rds"))#load model
-pp_check(prev_coliSNA_weakG)#looks okay
+prev_coliSNA_weakG <- readRDS(paste0(directory,"final/prev_coliSNA_weakG.rds"))#load model
+#pp_check(prev_coliSNA_weakG)#looks okay
 
 
 
@@ -304,8 +306,8 @@ prev_strongiSNA_weakP = brm_multiple(data = networks,
                 iter = 1000)
 
 #Save model
-#saveRDS(prev_strongiSNA_weakP, file = paste0(directory,"prev_strongiSNA_weakP.rds"))
-prev_strongiSNA_weakP <- readRDS(paste0(directory,"prev_strongiSNA_weakP.rds"))#load model
+#saveRDS(prev_strongiSNA_weakP, file = paste0(directory,"final/prev_strongiSNA_weakP.rds"))
+prev_strongiSNA_weakP <- readRDS(paste0(directory,"final/prev_strongiSNA_weakP.rds"))#load model
 pp_check(prev_strongiSNA_weakP)#looks okay
 
 
@@ -318,8 +320,8 @@ prev_strongiSNA_weakG = brm_multiple(data = networks,
                 iter = 1000)
 
 #Save model
-#saveRDS(prev_strongiSNA_weakG, file = paste0(directory,"prev_strongiSNA_weakG.rds"))
-prev_strongiSNA_weakG <- readRDS(paste0(directory,"prev_strongiSNA_weakG.rds"))#load model
+#saveRDS(prev_strongiSNA_weakG, file = paste0(directory,"prev_strongiSNA_weakG2.rds"))
+prev_strongiSNA_weakG <- readRDS(paste0(directory,"final/prev_strongiSNA_weakG.rds"))#load model
 pp_check(prev_strongiSNA_weakG)#looks okay
 
 
@@ -333,8 +335,8 @@ prev_trichuSNA_weakP = brm_multiple(data = networks,
                 iter = 1000)
 
 #Save model
-#saveRDS(prev_trichuSNA_weakP, file = paste0(directory,"prev_trichuSNA_weakP.rds"))
-prev_trichuSNA_weakP <- readRDS(paste0(directory,"prev_trichuSNA_weakP.rds"))#load model
+saveRDS(prev_trichuSNA_weakP, file = paste0(directory,"final/prev_trichuSNA_weakP.rds"))
+prev_trichuSNA_weakP <- readRDS(paste0(directory,"final/prev_trichuSNA_weakP.rds"))#load model
 pp_check(prev_trichuSNA_weakP)#looks okay
 
 
@@ -347,8 +349,8 @@ prev_trichuSNA_weakG = brm_multiple(data = networks,
                 iter = 1000)
 
 #Save model
-#saveRDS(prev_trichuSNA_weakG, file = paste0(directory,"prev_trichuSNA_weakG.rds"))
-prev_trichuSNA_weakG <- readRDS(paste0(directory,"prev_trichuSNA_weakG.rds"))#load model
+#saveRDS(prev_trichuSNA_weakG, file = paste0(directory,"prev_trichuSNA_weakG2.rds"))
+prev_trichuSNA_weakG <- readRDS(paste0(directory,"final/prev_trichuSNA_weakG.rds"))#load model
 pp_check(prev_trichuSNA_weakG)#looks okay
 
 
@@ -374,8 +376,7 @@ tab_model(prev_trichuSNA_weakP,transform =  NULL, show.r2 = F, show.p = T, show.
           show.ci = 0.89)
 
 #T. trichiura prevalence: weak grooming
-tab_model(prev_trichuSNA_weakG,transform =  NULL, show.r2 = F, show.p = T, show.se = T, show.stat = T, show.icc = F, show.re.var = F, dv.labels = "Infection risk",
-          show.ci = 0.89)
+tab_model(prev_trichuSNA_weakG,transform =  NULL, show.r2 = F, show.p = T, show.se = T, show.stat = T, show.icc = F, show.re.var = F, dv.labels = "Infection risk",show.ci = 0.89)
 
 ```
 
@@ -393,9 +394,9 @@ prev_coliSNA_str = brm_multiple(data = networks,
                 iter = 1000)
 
 #Save model
-#saveRDS(prev_coliSNA_str, file = paste0(directory,"final/prev_coliSNA_str.rds"))
+#saveRDS(prev_coliSNA_str, file = paste0(directory,"final/prev_coliSNA_str2.rds"))
 
-prev_coliSNA_str <- readRDS(paste0(directory,"prev_coliSNA_str.rds"))#load model
+prev_coliSNA_str <- readRDS(paste0(directory,"final/prev_coliSNA_str.rds"))#load model
 pp_check(prev_coliSNA_str)#looks okay
 
 
@@ -409,8 +410,8 @@ prev_strongiSNA_str = brm_multiple(data = networks,
                 iter = 1000)
 
 #Save model
-#saveRDS(prev_strongiSNA_str, file = paste0(directory,"prev_strongiSNA_str.rds"))
-prev_strongiSNA_str <- readRDS(paste0(directory,"prev_strongiSNA_str.rds"))#load model
+#saveRDS(prev_strongiSNA_str, file = paste0(directory,"final/prev_strongiSNA_str.rds"))
+prev_strongiSNA_str <- readRDS(paste0(directory,"final/prev_strongiSNA_str.rds"))#load model
 pp_check(prev_strongiSNA_str)#looks okay
 
 
@@ -423,8 +424,8 @@ prev_trichuSNA_str = brm_multiple(data = networks,
                 iter = 1000)
 
 #Save model
-#saveRDS(prev_trichuSNA_str, file = paste0(directory,"prev_trichuSNA_str.rds"))
-prev_trichuSNA_str <- readRDS(paste0(directory,"prev_trichuSNA_str.rds"))#load model
+#saveRDS(prev_trichuSNA_str, file = paste0(directory,"final/prev_trichuSNA_str.rds"))
+prev_trichuSNA_str <- readRDS(paste0(directory,"final/prev_trichuSNA_str.rds"))#load model
 pp_check(prev_trichuSNA_str)#looks okay
 
 #GENERATE TABLES WITH MODEL OUTPUTS
@@ -540,6 +541,65 @@ post %>%
 
 SUPPLEMENTARY SECTION
 
+Supplementary analyses
+```{r}
+HH = networks
+num_draws = 100
+  for(i in 1:num_draws){
+  HH[[i]] = networks[[i]][networks[[i]]$group == "HH",]
+  }
+KK = networks
+for(i in 1:num_draws){
+  KK[[i]] = networks[[i]][networks[[i]]$group == "KK",]
+}
+
+
+
+coliSNA_weakP_HH = brm_multiple(data = HH,
+                                  family = bernoulli,
+                                  balan_present ~ scale(std_weak_prox) + scale(age) + scale(perc_rank) + sex,
+                                  cores = 4,
+                                  prior = c(prior(student_t(5, 0, 2.5), class = "b")),
+                                  iter = 1000)
+
+saveRDS(coliSNA_weakP_HH, file = paste0(directory,"final/coliSNA_weakP_HH.rds"))
+#coliSNA_weakP_HH <- readRDS(paste0(directory,"final/coliSNA_weakP_HH.rds"))#load model
+
+
+coliSNA_weakP_KK = brm_multiple(data = KK,
+                                family = bernoulli,
+                                balan_present ~ scale(std_weak_prox) + scale(age) + scale(perc_rank) + sex,
+                                cores = 4,
+                                prior = c(prior(student_t(5, 0, 2.5), class = "b")),
+                                iter = 1000)
+
+saveRDS(coliSNA_weakP_KK, file = paste0(directory,"final/coliSNA_weakP_KK.rds"))
+#coliSNA_weakP_KK <- readRDS(paste0(directory,"final/coliSNA_weakP_KK.rds"))#load model
+
+coliSNA_weakG_HH = brm_multiple(data = HH,
+                                  family = bernoulli,
+                                  balan_present ~ scale(std_weak_groom) + scale(age) + scale(perc_rank) + sex,
+                                  cores = 4,
+                                  prior = c(prior(student_t(5, 0, 2.5), class = "b")),
+                                  iter = 1000)
+
+saveRDS(coliSNA_weakG_HH, file = paste0(directory,"final/coliSNA_weakG_HH.rds"))
+#coliSNA_weakG_HH <- readRDS(paste0(directory,"final/coliSNA_weakG_HH.rds"))#load model
+
+
+
+coliSNA_weakG_KK = brm_multiple(data = KK,
+                                family = bernoulli,
+                                balan_present ~ scale(std_weak_groom) + scale(age) + scale(perc_rank) + sex,
+                                cores = 4,
+                                prior = c(prior(student_t(5, 0, 2.5), class = "b")),
+                                iter = 1000)
+saveRDS(coliSNA_weakG_KK, file = paste0(directory,"final/coliSNA_weakG_KK.rds"))
+#coliSNA_weakG_KK <- readRDS(paste0(directory,"final/coliSNA_weakG_KK.rds"))#load model
+
+```
+
+
 Supp. Figures
 
 Figure S1: distributions of edge weights and threshold
@@ -620,6 +680,7 @@ nets = sample(networks,20)
 
 #create a dataframe where to store the data
 data = data.frame(prox = "",
+                  groom= "",
                   group = "")
 
 
@@ -628,6 +689,7 @@ for(i in 1:20){
    sample = nets[[i]]
    #create temp
    temp = data.frame(prox = sample$std_weak_prox,
+                     groom = sample$std_weak_groom,
                      group = sample$group)
    
    data = rbind(data,temp)
@@ -635,11 +697,17 @@ for(i in 1:20){
 
 data = data[-1,]
 data %<>% mutate(post_hurricane = ifelse(group == "HH", "Pre", "Post"),
-                 prox = as.numeric(prox))
+                 prox = as.numeric(prox),
+                 groom = as.numeric(groom))
 
 #Plot densities
+#FigS2A: weak prox partners
 ggplot(data, aes(x = prox, fill = post_hurricane)) + geom_density(alpha = 0.5) + theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+ labs(y = "Density", x= "Number of weak proximity partners (std)", fill = "Hurricane status") 
+
+#FigS2B: weak groom partners
+ggplot(data, aes(x = groom, fill = post_hurricane)) + geom_density(alpha = 0.5) + theme_bw()+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+ labs(y = "Density", x= "Number of weak grooming partners (std)", fill = "Hurricane status") 
 
 ```
 
@@ -649,25 +717,40 @@ Figure S3: correlation between measures of sociality from Bison
 
 #Get values from 20 draws from each posterior
 net_metrics = data.frame(prox_weak = "",
+                         prox_weak2 = "",
                          groom_weak = "",
+                         groom_weak2 = "",
                          groom_str = "",
+                         groom_str2 = "",
+                         prox_deg = "",
+                         groom_deg = "",
                          perc_rank = "")
 
-n_draws = 20
+n_draws = 50
 
 for(k in 1:n_draws){
-   post_n = networks[[k]]
-   temp  = data.frame(prox_weak = rep("", 70),
-                      groom_weak = rep("", 70),
-                      groom_str = rep("", 70),
-                      perc_rank = rep("", 70))
-   
-   temp$prox_weak = post_n$std_weak_prox
-   temp$groom_weak = post_n$std_weak_groo
-   temp$groom_str = post_n$std_topstr_groom
-   temp$perc_rank = post_n$perc_rank
-   
-   net_metrics = rbind(net_metrics,temp)
+  post_n = networks[[k]]
+  temp  = data.frame(prox_weak = rep("", 70),
+                     prox_weak2 = rep("", 70),
+                     groom_weak = rep("", 70),
+                     groom_weak2 = rep("", 70),
+                     groom_str = rep("", 70),
+                     groom_str2 = rep("", 70),
+                     prox_deg = rep("", 70),
+                     groom_deg = rep("", 70),
+                     perc_rank = rep("", 70))
+  
+  temp$prox_weak = post_n$std_weak_prox
+  temp$prox_weak2 = post_n$std_weak_prox2
+  temp$groom_weak = post_n$std_weak_groom
+  temp$groom_weak2 = post_n$std_weak_groom2
+  temp$groom_str = post_n$std_topstr_groom
+  temp$groom_str2 = post_n$std_topstr_groom2
+  temp$prox_deg = post_n$std_deg_prox
+  temp$groom_deg = post_n$std_deg_groom
+  temp$perc_rank = post_n$perc_rank
+  
+  net_metrics = rbind(net_metrics,temp)
 }
 
 net_metrics = net_metrics[-1,]
@@ -676,21 +759,76 @@ net_metrics %<>% mutate_if(is.character, as.numeric)
 
 #Plot correlogram
 library(corrplot)
-cor.mat1 <- net_metrics %>% select(perc_rank,prox_weak, groom_weak, groom_str)
+cor.mat1 <- net_metrics %>% select(rank = perc_rank, "# weak prox < 4th quartile" = prox_weak, "# weak prox < 90%" = prox_weak2, prox_degree = prox_deg, "# weak groom < 4th quartile" = groom_weak,"# weak groom < 90%" = groom_weak2,
+                                   "sum > 3rd quartile groom" = groom_str, "sum > 90% groom" = groom_str2, groom_degree = groom_deg)
 M <- cor(cor.mat1, method = "pearson", use = "complete.obs")
-corrplot.mixed(M, order = "hclust",tl.col = "black", tl.srt = 45)
+corrplot(M, type = "upper", order = "original",tl.col = "black", tl.srt = 45)
+
+
+```
+
+Figure S4: presence/absence infection vs age
+```{r}
+#keep relevant variables
+df1 = parasites %>% select(B.coli = bcoli_present, T.trichiura = trichuris_present, S.fuelleborni = strongiloid_present, 
+                           sex,age,outrank_perc) 
+for_plot = melt(df1, id.vars = c("sex","age","outrank_perc"))
+
+ggplot(for_plot, aes(y= value, x= age)) + 
+    geom_violin(position= "dodge",trim= FALSE, alpha= 0.5, show.legend=FALSE) +
+  geom_boxplot(aes(y= value, x= age), position=position_dodge(width = 0.895), width=0.1, outlier.colour= "gold4", outlier.size = 1.5, show.legend=FALSE)+
+  geom_jitter(aes(fill=value), size= 1.5, alpha=0.6,show.legend=FALSE) +
+  facet_wrap(~variable) + labs(y = "Presence of infection", x = "Age (years)") 
+
+
+```
+
+Figure S5: presence/absence infection vs rank
+```{r}
+#keep relevant variables
+df1 = parasites %>% select(B.coli = bcoli_present, T.trichiura = trichuris_present, S.fuelleborni = strongiloid_present, 
+                           sex,age,outrank_perc) 
+for_plot = melt(df1, id.vars = c("sex","age","outrank_perc"))
+
+ggplot(for_plot, aes(y= value, x= outrank_perc)) + 
+    geom_violin(position= "dodge",trim= FALSE, alpha= 0.5, show.legend=FALSE) +
+  geom_boxplot(aes(y= value, x= outrank_perc), position=position_dodge(width = 0.895), width=0.1, outlier.colour= "gold4", outlier.size = 1.5, show.legend=FALSE)+
+  geom_jitter(aes(fill=value), size= 1.5, alpha=0.6,show.legend=FALSE) +
+  facet_wrap(~variable) + labs(y = "Presence of infection", x = "Animals outranked (%)") 
+
 
 ```
 
 
-Figure S4: variation in age pre and post hurricane, and with social status
+Figure S6: presence/absence infection vs sex
 ```{r}
+#Bar plot more useful to plot quantities in both categorical variables
+df1 = parasites %>% select(B.coli = bcoli_present, T.trichiura = trichuris_present, S.fuelleborni = strongiloid_present, 
+                           sex) 
+for_plot = melt(df1, id.vars = c("sex"))
+for_plot %<>% group_by(sex,variable,value) %>% summarise(freq = n())
 
-#Is there enough data to test interactions?
-#Age and hurricane
+
+ggplot(for_plot, aes(sex, y = freq, fill = value)) +     
+  geom_col(position = 'dodge') + scale_y_continuous(breaks = seq(0,60,10))+
+  facet_wrap(~variable) + labs(x = "Sex", fill = "Presence of infection", y = "Count")
+                                                        
+                                          
+```
+
+Figure S7: variation in age pre and post hurricane, and with social status
+```{r}
+#FigS7A:
+#Age and hurricane per group
 ggplot(parasites, aes(x = age, fill = post_hurricane)) + geom_density(alpha = 0.45, colour = "black")+ theme_bw()+
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-#Seems that for age*post_hurricane its okay
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + facet_wrap(~group) + labs(x = "Age (years)", y = "Density", fill = "Hurricane status")
+
+#FigS7B:
+#Social status and hurricane per group
+ggplot(parasites, aes(x = outrank_perc, fill = post_hurricane)) + geom_density(alpha = 0.45, colour = "black")+ theme_bw()+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + facet_wrap(~group)+ labs(x = "Animals outranked (%)", y = "Density", fill = "Hurricane status")
+
+#######
 
 #Age and social status
 ggplot(parasites, aes(x = age, y = outrank_perc, colour = post_hurricane)) + geom_point(size = 3)+ theme_bw()+
@@ -707,5 +845,4 @@ post = parasites %>% filter(post_hurricane == 1)
 cor.test(post$age,post$outrank_perc)#NO
 
 ```
-
 
