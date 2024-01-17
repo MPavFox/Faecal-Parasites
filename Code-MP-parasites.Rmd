@@ -541,68 +541,65 @@ post %>%
 
 SUPPLEMENTARY SECTION
 
-Supplementary analyses
+Supp. Figures
+
+Figure S1: correlation between measures of sociality from Bison
 ```{r}
-HH = networks
-num_draws = 100
-  for(i in 1:num_draws){
-  HH[[i]] = networks[[i]][networks[[i]]$group == "HH",]
-  }
-KK = networks
-for(i in 1:num_draws){
-  KK[[i]] = networks[[i]][networks[[i]]$group == "KK",]
+
+#Get values from 20 draws from each posterior
+net_metrics = data.frame(prox_weak = "",
+                         prox_weak2 = "",
+                         groom_weak = "",
+                         groom_weak2 = "",
+                         groom_str = "",
+                         groom_str2 = "",
+                         prox_deg = "",
+                         groom_deg = "",
+                         perc_rank = "")
+
+n_draws = 50
+
+for(k in 1:n_draws){
+  post_n = networks[[k]]
+  temp  = data.frame(prox_weak = rep("", 70),
+                     prox_weak2 = rep("", 70),
+                     groom_weak = rep("", 70),
+                     groom_weak2 = rep("", 70),
+                     groom_str = rep("", 70),
+                     groom_str2 = rep("", 70),
+                     prox_deg = rep("", 70),
+                     groom_deg = rep("", 70),
+                     perc_rank = rep("", 70))
+  
+  temp$prox_weak = post_n$std_weak_prox
+  temp$prox_weak2 = post_n$std_weak_prox2
+  temp$groom_weak = post_n$std_weak_groom
+  temp$groom_weak2 = post_n$std_weak_groom2
+  temp$groom_str = post_n$std_topstr_groom
+  temp$groom_str2 = post_n$std_topstr_groom2
+  temp$prox_deg = post_n$std_deg_prox
+  temp$groom_deg = post_n$std_deg_groom
+  temp$perc_rank = post_n$perc_rank
+  
+  net_metrics = rbind(net_metrics,temp)
 }
 
+net_metrics = net_metrics[-1,]
+net_metrics %<>% mutate_if(is.character, as.numeric)
 
 
-coliSNA_weakP_HH = brm_multiple(data = HH,
-                                  family = bernoulli,
-                                  balan_present ~ scale(std_weak_prox) + scale(age) + scale(perc_rank) + sex,
-                                  cores = 4,
-                                  prior = c(prior(student_t(5, 0, 2.5), class = "b")),
-                                  iter = 1000)
+#Plot correlogram
+library(corrplot)
+cor.mat1 <- net_metrics %>% select(rank = perc_rank, "# weak prox < 4th quartile" = prox_weak, "# weak prox < 90%" = prox_weak2, prox_degree = prox_deg, "# weak groom < 4th quartile" = groom_weak,"# weak groom < 90%" = groom_weak2,
+                                   "sum > 3rd quartile groom" = groom_str, "sum > 90% groom" = groom_str2, groom_degree = groom_deg)
+M <- cor(cor.mat1, method = "pearson", use = "complete.obs")
+corrplot(M, type = "upper", order = "original",tl.col = "black", tl.srt = 45)
 
-saveRDS(coliSNA_weakP_HH, file = paste0(directory,"final/coliSNA_weakP_HH.rds"))
-#coliSNA_weakP_HH <- readRDS(paste0(directory,"final/coliSNA_weakP_HH.rds"))#load model
-
-
-coliSNA_weakP_KK = brm_multiple(data = KK,
-                                family = bernoulli,
-                                balan_present ~ scale(std_weak_prox) + scale(age) + scale(perc_rank) + sex,
-                                cores = 4,
-                                prior = c(prior(student_t(5, 0, 2.5), class = "b")),
-                                iter = 1000)
-
-saveRDS(coliSNA_weakP_KK, file = paste0(directory,"final/coliSNA_weakP_KK.rds"))
-#coliSNA_weakP_KK <- readRDS(paste0(directory,"final/coliSNA_weakP_KK.rds"))#load model
-
-coliSNA_weakG_HH = brm_multiple(data = HH,
-                                  family = bernoulli,
-                                  balan_present ~ scale(std_weak_groom) + scale(age) + scale(perc_rank) + sex,
-                                  cores = 4,
-                                  prior = c(prior(student_t(5, 0, 2.5), class = "b")),
-                                  iter = 1000)
-
-saveRDS(coliSNA_weakG_HH, file = paste0(directory,"final/coliSNA_weakG_HH.rds"))
-#coliSNA_weakG_HH <- readRDS(paste0(directory,"final/coliSNA_weakG_HH.rds"))#load model
-
-
-
-coliSNA_weakG_KK = brm_multiple(data = KK,
-                                family = bernoulli,
-                                balan_present ~ scale(std_weak_groom) + scale(age) + scale(perc_rank) + sex,
-                                cores = 4,
-                                prior = c(prior(student_t(5, 0, 2.5), class = "b")),
-                                iter = 1000)
-saveRDS(coliSNA_weakG_KK, file = paste0(directory,"final/coliSNA_weakG_KK.rds"))
-#coliSNA_weakG_KK <- readRDS(paste0(directory,"final/coliSNA_weakG_KK.rds"))#load model
 
 ```
 
 
-Supp. Figures
-
-Figure S1: distributions of edge weights and threshold
+Figure S2: distributions of edge weights and threshold
 ```{r}
 
 list_edges = c("HH_edgelist","KK_edgelist")
@@ -672,7 +669,7 @@ rm(fit_edge,temp,weights,priors)
 ```
 
 
-Figure S2: Distribution of weak proximity partners pre and post hurricane.
+Figure S3: Distribution of weak proximity partners pre and post hurricane.
 ```{r}
 
 #Sample 20 random draws
@@ -712,60 +709,6 @@ ggplot(data, aes(x = groom, fill = post_hurricane)) + geom_density(alpha = 0.5) 
 ```
 
 
-Figure S3: correlation between measures of sociality from Bison
-```{r}
-
-#Get values from 20 draws from each posterior
-net_metrics = data.frame(prox_weak = "",
-                         prox_weak2 = "",
-                         groom_weak = "",
-                         groom_weak2 = "",
-                         groom_str = "",
-                         groom_str2 = "",
-                         prox_deg = "",
-                         groom_deg = "",
-                         perc_rank = "")
-
-n_draws = 50
-
-for(k in 1:n_draws){
-  post_n = networks[[k]]
-  temp  = data.frame(prox_weak = rep("", 70),
-                     prox_weak2 = rep("", 70),
-                     groom_weak = rep("", 70),
-                     groom_weak2 = rep("", 70),
-                     groom_str = rep("", 70),
-                     groom_str2 = rep("", 70),
-                     prox_deg = rep("", 70),
-                     groom_deg = rep("", 70),
-                     perc_rank = rep("", 70))
-  
-  temp$prox_weak = post_n$std_weak_prox
-  temp$prox_weak2 = post_n$std_weak_prox2
-  temp$groom_weak = post_n$std_weak_groom
-  temp$groom_weak2 = post_n$std_weak_groom2
-  temp$groom_str = post_n$std_topstr_groom
-  temp$groom_str2 = post_n$std_topstr_groom2
-  temp$prox_deg = post_n$std_deg_prox
-  temp$groom_deg = post_n$std_deg_groom
-  temp$perc_rank = post_n$perc_rank
-  
-  net_metrics = rbind(net_metrics,temp)
-}
-
-net_metrics = net_metrics[-1,]
-net_metrics %<>% mutate_if(is.character, as.numeric)
-
-
-#Plot correlogram
-library(corrplot)
-cor.mat1 <- net_metrics %>% select(rank = perc_rank, "# weak prox < 4th quartile" = prox_weak, "# weak prox < 90%" = prox_weak2, prox_degree = prox_deg, "# weak groom < 4th quartile" = groom_weak,"# weak groom < 90%" = groom_weak2,
-                                   "sum > 3rd quartile groom" = groom_str, "sum > 90% groom" = groom_str2, groom_degree = groom_deg)
-M <- cor(cor.mat1, method = "pearson", use = "complete.obs")
-corrplot(M, type = "upper", order = "original",tl.col = "black", tl.srt = 45)
-
-
-```
 
 Figure S4: presence/absence infection vs age
 ```{r}
@@ -773,12 +716,13 @@ Figure S4: presence/absence infection vs age
 df1 = parasites %>% select(B.coli = bcoli_present, T.trichiura = trichuris_present, S.fuelleborni = strongiloid_present, 
                            sex,age,outrank_perc) 
 for_plot = melt(df1, id.vars = c("sex","age","outrank_perc"))
+for_plot %<>% mutate(value = factor(value))
 
 ggplot(for_plot, aes(y= value, x= age)) + 
     geom_violin(position= "dodge",trim= FALSE, alpha= 0.5, show.legend=FALSE) +
   geom_boxplot(aes(y= value, x= age), position=position_dodge(width = 0.895), width=0.1, outlier.colour= "gold4", outlier.size = 1.5, show.legend=FALSE)+
   geom_jitter(aes(fill=value), size= 1.5, alpha=0.6,show.legend=FALSE) +
-  facet_wrap(~variable) + labs(y = "Presence of infection", x = "Age (years)") 
+  facet_wrap(~variable) + labs(y = "Presence of infection", x = "Age (years)") + theme_classic()
 
 
 ```
@@ -789,12 +733,13 @@ Figure S5: presence/absence infection vs rank
 df1 = parasites %>% select(B.coli = bcoli_present, T.trichiura = trichuris_present, S.fuelleborni = strongiloid_present, 
                            sex,age,outrank_perc) 
 for_plot = melt(df1, id.vars = c("sex","age","outrank_perc"))
+for_plot %<>% mutate(value = factor(value))
 
 ggplot(for_plot, aes(y= value, x= outrank_perc)) + 
     geom_violin(position= "dodge",trim= FALSE, alpha= 0.5, show.legend=FALSE) +
   geom_boxplot(aes(y= value, x= outrank_perc), position=position_dodge(width = 0.895), width=0.1, outlier.colour= "gold4", outlier.size = 1.5, show.legend=FALSE)+
   geom_jitter(aes(fill=value), size= 1.5, alpha=0.6,show.legend=FALSE) +
-  facet_wrap(~variable) + labs(y = "Presence of infection", x = "Animals outranked (%)") 
+  facet_wrap(~variable) + labs(y = "Presence of infection", x = "Animals outranked (%)") + theme_classic()
 
 
 ```
@@ -807,11 +752,12 @@ df1 = parasites %>% select(B.coli = bcoli_present, T.trichiura = trichuris_prese
                            sex) 
 for_plot = melt(df1, id.vars = c("sex"))
 for_plot %<>% group_by(sex,variable,value) %>% summarise(freq = n())
+for_plot %<>% mutate(value = factor(value))
 
 
 ggplot(for_plot, aes(sex, y = freq, fill = value)) +     
   geom_col(position = 'dodge') + scale_y_continuous(breaks = seq(0,60,10))+
-  facet_wrap(~variable) + labs(x = "Sex", fill = "Presence of infection", y = "Count")
+  facet_wrap(~variable) + labs(x = "Sex", fill = "Presence of infection", y = "Count") + theme_classic()
                                                         
                                           
 ```
