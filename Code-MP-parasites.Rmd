@@ -108,7 +108,7 @@ Measures of parasite risk:
 Measures of Sociality:
 - Social status: agonistic observations from the three groups (males + females).
 - Number of weak partners (degree < threshold): grooming and proximity separately.
-- Strength to strong partners (strengt >= threshold): grooming and proximity separately
+- Strength to strong partners (strength >= threshold): grooming and proximity separately
 
 Covariates:
 - Age.
@@ -195,7 +195,7 @@ pp_check(prev_coli_main)#looks okay
 
 #B. coli intensity
 int_coli = brm(data = parasites,
-                family = lognormal(),
+                family = negbinomial(),
                 proto_count_NZ ~ scale(age) + scale(outrank_perc) + post_hurricane + sex + season,
                 cores = 4,
                 prior = c(prior(student_t(5, 0, 2.5), class = "b")),
